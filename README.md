@@ -10,6 +10,11 @@ Test Coverage Status  [![Coverage Status](https://coveralls.io/repos/NanoHttpd/n
 
 ## Android changes
 - I added defensive code in the `safeClose()` method which caused bugs on Android versions prior to API16 due to this reported bug https://code.google.com/p/android/issues/detail?id=62909
+- 
+
+## Ideas
+- [ ] Support proxying natively
+- [ ] Add automatic file serving (apart from reading only the index)
 
 ## Core Features
 * Only one Java file, providing HTTP 1.1 support.
