@@ -10,7 +10,7 @@ Test Coverage Status  [![Coverage Status](https://coveralls.io/repos/NanoHttpd/n
 
 ## Android changes
 - I added defensive code in the `safeClose()` method which caused bugs on Android versions prior to API16 due to this reported bug https://code.google.com/p/android/issues/detail?id=62909
-- 
+- The server is now created passing an Android Context. It's used to get the temporal directory and the temporal file used to parse the input requests.
 
 ## Ideas
 - [ ] Support proxying natively
