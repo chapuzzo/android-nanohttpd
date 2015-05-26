@@ -35,7 +35,11 @@ package fi.iki.elonen;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+
+import android.content.Context;
 import android.os.*;
+import android.support.annotation.NonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -172,7 +176,7 @@ public abstract class NanoHTTPD {
             OutputStream outputStream = null;
             try {
                 outputStream = this.acceptSocket.getOutputStream();
-                TempFileManager tempFileManager = NanoHTTPD.this.tempFileManagerFactory.create();
+                TempFileManager tempFileManager = NanoHTTPD.this.tempFileManagerFactory.create(context);
                 HTTPSession session = new HTTPSession(tempFileManager, this.inputStream, outputStream, this.acceptSocket.getInetAddress());
                 while (!this.acceptSocket.isClosed()) {
                     session.execute();
@@ -417,9 +421,26 @@ public abstract class NanoHTTPD {
 
         private final List<TempFile> tempFiles;
 
-        public DefaultTempFileManager() {
-            this.tmpdir = System.getProperty("java.io.tmpdir");
+        public DefaultTempFileManager(Context context) {
+            this.tmpdir = getExternalDir(context);
             this.tempFiles = new ArrayList<TempFile>();
+        }
+
+        private static String getExternalDir(Context context)
+        {
+            String baseDir;
+            String state = Environment.getExternalStorageState();
+            if(Environment.MEDIA_MOUNTED.equals(state)) {
+                File baseDirFile = context.getExternalFilesDir(null);
+                if(baseDirFile == null) {
+                    baseDir = context.getFilesDir().getAbsolutePath();
+                } else {
+                    baseDir = baseDirFile.getAbsolutePath();
+                }
+            } else {
+                baseDir = context.getFilesDir().getAbsolutePath();
+            }
+            return baseDir;
         }
 
         @Override
@@ -448,8 +469,8 @@ public abstract class NanoHTTPD {
     private class DefaultTempFileManagerFactory implements TempFileManagerFactory {
 
         @Override
-        public TempFileManager create() {
-            return new DefaultTempFileManager();
+        public TempFileManager create(Context context) {
+            return new DefaultTempFileManager(context);
         }
     }
 
@@ -855,7 +876,7 @@ public abstract class NanoHTTPD {
                 TempFile tempFile = this.tempFileManager.createTempFile();
                 return new RandomAccessFile(tempFile.getName(), "rw");
             } catch (Exception e) {
-                throw new Error(e); // we won't recover, so throw an error
+                throw new Error("Error creating temp file");
             }
         }
 
@@ -1398,7 +1419,7 @@ public abstract class NanoHTTPD {
      */
     public interface TempFileManagerFactory {
 
-        TempFileManager create();
+        TempFileManager create(Context context);
     }
 
     /**
@@ -1495,15 +1516,12 @@ public abstract class NanoHTTPD {
         return res;
     }
 
-    private static final void safeClose(Closeable closeable) {
+    private static void safeClose(Closeable closeable) {
         if (closeable != null) {
             try {
                 if (!(closeable instanceof Closeable)) {
                     if ((closeable instanceof Socket)) {
-                        InputStream inputStream = ((Socket)closeable).getInputStream();
-                        InputStream outputStream = ((Socket)closeable).getInputStream();
-                        if (inputStream != null) inputStream.close();
-                        if (outputStream != null) outputStream.close();
+                        if (((Socket) closeable).isClosed()) { return; }
                     }
                     return;
                 }
@@ -1537,9 +1555,20 @@ public abstract class NanoHTTPD {
     private TempFileManagerFactory tempFileManagerFactory;
 
     /**
+     * Context needed for some operations
+     */
+    private Context context;
+
+    public NanoHTTPD(int port, @NonNull Context context)
+    {
+        this(port);
+        this.context = context;
+    }
+
+    /**
      * Constructs an HTTP server on given port.
      */
-    public NanoHTTPD(int port) {
+    private NanoHTTPD(int port) {
         this(null, port);
     }
 
@@ -1554,7 +1583,7 @@ public abstract class NanoHTTPD {
     /**
      * Constructs an HTTP server on given hostname and port.
      */
-    public NanoHTTPD(String hostname, int port) {
+    private NanoHTTPD(String hostname, int port) {
         this.hostname = hostname;
         this.myPort = port;
         setTempFileManagerFactory(new DefaultTempFileManagerFactory());
