@@ -8,7 +8,7 @@ current build status at https://travis-ci.org [![Build Status](https://api.travi
 
 Test Coverage Status  [![Coverage Status](https://coveralls.io/repos/NanoHttpd/nanohttpd/badge.svg)](https://coveralls.io/r/NanoHttpd/nanohttpd)
 
-** Android changes
+## Android changes
 - I added defensive code in the `safeClose()` method which caused bugs on Android versions prior to API16 due to this reported bug https://code.google.com/p/android/issues/detail?id=62909
 
 ## Core Features
