@@ -153,7 +153,6 @@ public abstract class NanoHTTPD {
     }
 
     /**
-<<<<<<< HEAD
      * Listener to report internal exceptions
      */
     public interface NanoHTTPDListener {
@@ -162,8 +161,6 @@ public abstract class NanoHTTPD {
 
 
     /**
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
      * The runnable that will be used for every new client connection.
      */
     public class ClientHandler implements Runnable {
@@ -187,27 +184,13 @@ public abstract class NanoHTTPD {
             OutputStream outputStream = null;
             try {
                 outputStream = this.acceptSocket.getOutputStream();
-<<<<<<< HEAD
                 TempFileManager tempFileManager = NanoHTTPD.this.tempFileManagerFactory.create(context, listener);
-=======
-                TempFileManager tempFileManager = NanoHTTPD.this.tempFileManagerFactory.create(context);
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 HTTPSession session = new HTTPSession(tempFileManager, this.inputStream, outputStream, this.acceptSocket.getInetAddress());
                 while (!this.acceptSocket.isClosed()) {
                     session.execute();
                 }
             } catch (Exception e) {
-<<<<<<< HEAD
                 listener.onException(e);
-=======
-                // When the socket is closed by the client,
-                // we throw our own SocketException
-                // to break the "keep alive" loop above. If
-                // the exception was anything other
-                // than the expected SocketException OR a
-                // SocketTimeoutException, print the
-                // stacktrace
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 if (!(e instanceof SocketException && "NanoHttpd Shutdown".equals(e.getMessage())) && !(e instanceof SocketTimeoutException)) {
                     NanoHTTPD.LOG.log(Level.FINE, "Communication with the client broken", e);
                 }
@@ -437,7 +420,6 @@ public abstract class NanoHTTPD {
     public static class DefaultTempFileManager implements TempFileManager {
 
         private final String tmpdir;
-<<<<<<< HEAD
         private NanoHTTPDListener listener;
         private final List<TempFile> tempFiles;
 
@@ -445,14 +427,6 @@ public abstract class NanoHTTPD {
             this.tmpdir = getExternalDir(context);
             this.tempFiles = new ArrayList<TempFile>();
             this.listener = listener;
-=======
-
-        private final List<TempFile> tempFiles;
-
-        public DefaultTempFileManager(Context context) {
-            this.tmpdir = getExternalDir(context);
-            this.tempFiles = new ArrayList<TempFile>();
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
         }
 
         private static String getExternalDir(Context context)
@@ -478,13 +452,9 @@ public abstract class NanoHTTPD {
                 try {
                     file.delete();
                 } catch (Exception ignored) {
-<<<<<<< HEAD
                     listener.onException(ignored);
                     NanoHTTPD.LOG.log(Level.WARNING, "could not delete file ", ignored);
                     listener.onException(ignored);
-=======
-                    NanoHTTPD.LOG.log(Level.WARNING, "could not delete file ", ignored);
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 }
             }
             this.tempFiles.clear();
@@ -504,13 +474,8 @@ public abstract class NanoHTTPD {
     private class DefaultTempFileManagerFactory implements TempFileManagerFactory {
 
         @Override
-<<<<<<< HEAD
         public TempFileManager create(Context context, NanoHTTPDListener listener) {
             return new DefaultTempFileManager(context, listener);
-=======
-        public TempFileManager create(Context context) {
-            return new DefaultTempFileManager(context);
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
         }
     }
 
@@ -611,10 +576,7 @@ public abstract class NanoHTTPD {
 
                 pre.put("uri", uri);
             } catch (IOException ioe) {
-<<<<<<< HEAD
                 listener.onException(ioe);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 throw new ResponseException(Response.Status.INTERNAL_ERROR, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage(), ioe);
             }
         }
@@ -698,10 +660,7 @@ public abstract class NanoHTTPD {
                     }
                 }
             } catch (IOException ioe) {
-<<<<<<< HEAD
                 listener.onException(ioe);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 throw new ResponseException(Response.Status.INTERNAL_ERROR, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage(), ioe);
             }
         }
@@ -733,10 +692,7 @@ public abstract class NanoHTTPD {
 
         @Override
         public void execute() throws IOException {
-<<<<<<< HEAD
 
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
             try {
                 // Read the first 8192 bytes.
                 // The full header should fit in here.
@@ -748,17 +704,11 @@ public abstract class NanoHTTPD {
                 this.rlen = 0;
 
                 int read = -1;
-<<<<<<< HEAD
 
                 try {
                     read = this.inputStream.read(buf, 0, HTTPSession.BUFSIZE);
                 } catch (Exception e) {
                     listener.onException(e);
-=======
-                try {
-                    read = this.inputStream.read(buf, 0, HTTPSession.BUFSIZE);
-                } catch (Exception e) {
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                     safeClose(this.inputStream);
                     safeClose(this.outputStream);
                     throw new SocketException("NanoHttpd Shutdown");
@@ -820,34 +770,22 @@ public abstract class NanoHTTPD {
                     r.send(this.outputStream);
                 }
             } catch (SocketException e) {
-<<<<<<< HEAD
                 listener.onException(e);
                 // throw it out to close socket object (finalAccept)
                 throw e;
             } catch (SocketTimeoutException ste) {
                 listener.onException(ste);
-=======
-                // throw it out to close socket object (finalAccept)
-                throw e;
-            } catch (SocketTimeoutException ste) {
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 // treat socket timeouts the same way we treat socket exceptions
                 // i.e. close the stream & finalAccept object by throwing the
                 // exception up the call stack.
                 throw ste;
             } catch (IOException ioe) {
-<<<<<<< HEAD
                 listener.onException(ioe);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 Response r = newFixedLengthResponse(Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
                 r.send(this.outputStream);
                 safeClose(this.outputStream);
             } catch (ResponseException re) {
-<<<<<<< HEAD
                 listener.onException(re);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 Response r = newFixedLengthResponse(re.getStatus(), NanoHTTPD.MIME_PLAINTEXT, re.getMessage());
                 r.send(this.outputStream);
                 safeClose(this.outputStream);
@@ -952,10 +890,7 @@ public abstract class NanoHTTPD {
                 TempFile tempFile = this.tempFileManager.createTempFile();
                 return new RandomAccessFile(tempFile.getName(), "rw");
             } catch (Exception e) {
-<<<<<<< HEAD
                 listener.onException(e);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 throw new Error("Error creating temp file");
             }
         }
@@ -1076,10 +1011,7 @@ public abstract class NanoHTTPD {
                     dest.write(src.slice());
                     path = tempFile.getName();
                 } catch (Exception e) { // Catch exception if any
-<<<<<<< HEAD
                     listener.onException(e);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                     throw new Error(e); // we won't recover, so throw an error
                 } finally {
                     safeClose(fileOutputStream);
@@ -1460,10 +1392,7 @@ public abstract class NanoHTTPD {
                     final InputStream inputStream = finalAccept.getInputStream();
                     NanoHTTPD.this.asyncRunner.exec(createClientHandler(finalAccept, inputStream));
                 } catch (IOException e) {
-<<<<<<< HEAD
                     listener.onException(e);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                     NanoHTTPD.LOG.log(Level.FINE, "Communication with the client broken", e);
                 }
             } while (!NanoHTTPD.this.myServerSocket.isClosed());
@@ -1507,11 +1436,7 @@ public abstract class NanoHTTPD {
      */
     public interface TempFileManagerFactory {
 
-<<<<<<< HEAD
         TempFileManager create(Context context, NanoHTTPDListener listener);
-=======
-        TempFileManager create(Context context);
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
     }
 
     /**
@@ -1651,7 +1576,6 @@ public abstract class NanoHTTPD {
      */
     private Context context;
 
-<<<<<<< HEAD
     /**
      * Listener to report internal exceptions
      */
@@ -1662,12 +1586,6 @@ public abstract class NanoHTTPD {
         this(port);
         this.context = context;
         this.listener = listener;
-=======
-    public NanoHTTPD(int port, @NonNull Context context)
-    {
-        this(port);
-        this.context = context;
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
     }
 
     /**
@@ -1789,10 +1707,7 @@ public abstract class NanoHTTPD {
         try {
             decoded = URLDecoder.decode(str, "UTF8");
         } catch (UnsupportedEncodingException ignored) {
-<<<<<<< HEAD
             listener.onException(ignored);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
             NanoHTTPD.LOG.log(Level.WARNING, "Encoding not supported, ignored", ignored);
         }
         return decoded;
@@ -1838,10 +1753,7 @@ public abstract class NanoHTTPD {
             try {
                 bytes = txt.getBytes("UTF-8");
             } catch (UnsupportedEncodingException e) {
-<<<<<<< HEAD
                 listener.onException(e);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 NanoHTTPD.LOG.log(Level.SEVERE, "encoding problem, responding nothing", e);
                 bytes = new byte[0];
             }
@@ -1873,15 +1785,10 @@ public abstract class NanoHTTPD {
             try {
                 session.parseBody(files);
             } catch (IOException ioe) {
-<<<<<<< HEAD
                 listener.onException(ioe);
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
             } catch (ResponseException re) {
                 listener.onException(re);
-=======
-                return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
-            } catch (ResponseException re) {
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
                 return newFixedLengthResponse(re.getStatus(), NanoHTTPD.MIME_PLAINTEXT, re.getMessage());
             }
         }
@@ -1962,10 +1869,6 @@ public abstract class NanoHTTPD {
         }
         this.myServerSocket.setReuseAddress(true);
         this.myServerSocket.bind(this.hostname != null ? new InetSocketAddress(this.hostname, this.myPort) : new InetSocketAddress(this.myPort));
-<<<<<<< HEAD
-=======
-
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
         this.myThread = new Thread(createServerRunnable(timeout));
         this.myThread.setDaemon(true);
         this.myThread.setName("NanoHttpd Main Listener");
@@ -1985,10 +1888,7 @@ public abstract class NanoHTTPD {
                 }
             }
         } catch (Exception e) {
-<<<<<<< HEAD
             listener.onException(e);
-=======
->>>>>>> 86ecfe86a81e353896c7656cae31ee1ee900efac
             NanoHTTPD.LOG.log(Level.SEVERE, "Could not stop all connections", e);
         }
     }
